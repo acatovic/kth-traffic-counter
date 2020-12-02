@@ -1,0 +1,75 @@
+targets.csv:
+
+Each row corresponds to a 15-minute vehicle count for a specific traffic sensor 
+(StationId). StartTime indicates the actual start time of the 15-minute 
+aggregation period, i.e. "2020-04-01 00:00:00" includes all vehicle counts from 
+"00:00:00" until "00:15:00". The vehicle counts are given by NumberOfVehicles. 
+An odd numbered sensor (e.g. 101) indicates city in-bound traffic, while even 
+numbered sensor (e.g. 102) indicates out-bound traffic.
+
+Some more specific information about this data:
+
+* The data corresponds to a specific road segment on Klarastrandsleden in 
+Stockholm
+* The data collection period is from 2020-04-01 00:00:00 until 2020-09-30 
+23:45:00
+* StationId=101 covers one lane
+* StationId=102 covers two lanes (one lane is turning-off towards Solna)
+* The speed limit on the road is 70 km/hr
+* The distance between traffic sensor and 4G mast is ~ 450m
+
+NOTES:
+
+* You should add StationId 101 and 102 and look at total number of vehicles
+* There may be missing values in the dataset
+
+features.csv:
+
+Each row corresponds to a 15-min path loss distribution for a specific cell 
+(CellId). There are four cells - two on 1800MHz carrier frequency (Band), one 
+on 800MHz, and one on 2600MHz. StartTime indicates the actual start time of a 
+15-minute aggregation period, i.e. "2020-08-01 00:00:00" includes all path loss 
+distribution values from "00:00:00" until "00:15:00". Path loss values are in 
+decibles (dB) and distributed as follows:
+
+PL_00: PL less than or equals to 50
+PL_01: 50 less than PL less than or equals to 55
+PL_02: 55 less than PL less than or equals to 60
+PL_03: 60 less than PL less than or equals to 65
+PL_04: 65 less than PL less than or equals to 70
+PL_05: 70 less than PL less than or equals to 75
+PL_06: 75 less than PL less than or equals to 80
+PL_07: 80 less than PL less than or equals to 85
+PL_08: 85 less than PL less than or equals to 90
+PL_09: 90 less than PL less than or equals to 95
+PL_10: 95 less than PL less than or equals to 100
+PL_11: 100 less than PL less than or equals to 105
+PL_12: 105 less than PL less than or equals to 110
+PL_13: 110 less than PL less than or equals to 115
+PL_14: 115 less than PL less than or equals to 120
+PL_15: 120 less than PL less than or equals to 125
+PL_16: 125 less than PL less than or equals to 130
+PL_17: 130 less than PL less than or equals to 135
+PL_18: 135 less than PL less than or equals to 140
+PL_19: 140 less than PL less than or equals to 145
+PL_20: 145 less than PL
+
+The 4G mast is situated ~ 450m from the traffic sensor, and is at a height of 
+27m above ground (NOTE: the relative height compared to the traffic sensor may 
+be greater since the tower is on top of a building which is on top of a hill).
+
+NOTES:
+
+* Low path loss values are rare, so first PL_* bins are usually zeroes
+* Instead of selecting all PL values are features, we could select only those 
+bins that correspond to the distance of 450m - to obtain the correct PL bin we 
+need to plug-in the distance (450m) into a COST Hata formulae (see References); 
+note however that since the formula depends on carrier frequency, we need to 
+treat each band separately
+* Another alternative is to apply a kernel/convolution operation to all PL 
+bins, where the highest probability/weight is put on the PL bin that best 
+corresponds to the distance
+
+References:
+
+https://en.wikipedia.org/wiki/COST_Hata_model
