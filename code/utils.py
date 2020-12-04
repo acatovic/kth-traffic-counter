@@ -1,8 +1,30 @@
 # Python Script which contains useful help functions for making transformations to target and feature dataset
 
-#Function which sums up the number of vehicles per StartTime.
+import pandas as pd
+
 def groupby_stationid(df):
-    return df[['StartTime','NumberOfVehicles']].groupby('StartTime').sum().reset_index()
+    '''Sum up vehicle counts for all sensors, for each sampling interval.
+    
+    Assume `df` has the following columns:
+    
+      o StartTime: Starting date + time of 15-min sample interval
+      o StationId: Id (int64) of traffic sensor/station
+      o NumberOfVehicles: 15-min aggregate vehicle count
+    '''
+    stations = df['StationId'].unique()
+    df['StartTime'] = pd.to_datetime(df['StartTime'])
+    df2 = pd.DataFrame(columns=stations)
+    for station in stations:
+        d = df[df['StationId'] == station][['StartTime', 'NumberOfVehicles']]
+        d = d.set_index('StartTime').resample('15min').sum(min_count=1)
+        df2[station] = d['NumberOfVehicles']
+    
+    df2.dropna(inplace=True)
+    df2['NumberOfVehicles'] = df2.iloc[:, -len(stations):].sum(axis=1)
+    df2 = df2.reset_index()
+    
+    return df2[['StartTime', 'NumberOfVehicles']]
+    
 
 #Function which takes the mean of each band per timestamp
 def groupby_band(df,mode):
