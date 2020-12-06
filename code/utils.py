@@ -13,12 +13,10 @@ def groupby_stationid(df):
     '''
     stations = df['StationId'].unique()
     df['StartTime'] = pd.to_datetime(df['StartTime'])
+    df = df.set_index('StartTime')
     df2 = pd.DataFrame(columns=stations)
     for station in stations:
-        d = df[df['StationId'] == station][['StartTime', 'NumberOfVehicles']]
-        d = d.set_index('StartTime').resample('15min').sum(min_count=1)
-        df2[station] = d['NumberOfVehicles']
-    
+        df2[station] = df[df['StationId'] == station]['NumberOfVehicles']
     df2.dropna(inplace=True)
     df2['NumberOfVehicles'] = df2.iloc[:, -len(stations):].sum(axis=1)
     df2 = df2.reset_index()
